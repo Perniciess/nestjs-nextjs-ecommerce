@@ -5,7 +5,7 @@ import { ProductDto } from './dto/product.dto'
 
 @Injectable()
 export class ProductsService {
-    constructor(private prisma: PrismaService) {}
+    constructor(private prisma: PrismaService) { }
 
     async getProducts() {
         return this.prisma.product.findMany({

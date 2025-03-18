@@ -8,6 +8,7 @@ import { PrismaModule } from './modules/prisma/prisma.module'
 import { ProductsModule } from './modules/products/products.module'
 import { UsersService } from './modules/users/users.service'
 
+
 @Module({
     imports: [
         PrismaModule,
@@ -24,4 +25,4 @@ import { UsersService } from './modules/users/users.service'
     ],
     providers: [UsersService],
 })
-export class AppModule {}
+export class AppModule { }

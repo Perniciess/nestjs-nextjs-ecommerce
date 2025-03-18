@@ -43,7 +43,7 @@
         "uuid": "^11.0.2"
     },
     "devDependencies": {
-        "@antfu/eslint-config": "^4.1.1",
+        "@antfu/eslint-config": "^4.10.1",
         "@nestjs/cli": "^10.0.0",
         "@nestjs/schematics": "^10.0.0",
         "@nestjs/serve-static": "^4.0.2",
@@ -57,7 +57,7 @@
         "@typescript-eslint/parser": "^8.23.0",
         "class-validator": "^0.14.1",
         "cookie-parser": "^1.4.7",
-        "eslint": "^9.19.0",
+        "eslint": "^9.22.0",
         "eslint-config-prisma": "^0.6.0",
         "eslint-plugin-deprecation": "^3.0.0",
         "eslint-plugin-only-warn": "^1.1.0",
