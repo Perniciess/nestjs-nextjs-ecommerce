@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
         return [
             {
                 source: '/api/:path*',
-                destination: `${process.env.NEST_WEB_URL}api/:path/*`,
+                destination: `/api/:path*`,
             },
         ]
     },
@@ -14,15 +14,15 @@ const nextConfig: NextConfig = {
     images: {
         remotePatterns: [
             {
-                protocol: 'http',
-                hostname: 'localhost',
-                port: '3000',
-                pathname: '/**',
+                protocol: process.env.REMOTE_PATTERNS_PROTOCOL,
+                hostname: process.env.REMOTE_PATTERNS_HOSTNAME,
+                port: process.env.REMOTE_PATTERNS_PORT,
+                pathname: process.env.REMOTE_PATTERNS_PATHNAME,
             },
         ],
     },
     env: {
-        NEST_WEB_URL: process.env.NEST_WEB_URL,
+        NEST_WEB_URL: process.env.LOCAL_NEST_WEB_URL,
     },
 }
 

@@ -13,3 +13,13 @@ NEST_WEB_URL="http://localhost:3000/"
 
 
 shadcnui
+
+
+sudo docker run -d \
+  --name postgres \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=1 \
+  -e POSTGRES_DB=postgres \
+  -p 5432:5432 \
+  -v $(pwd)/database/postgresql-data:/var/lib/postgresql/data \
+  postgres:16

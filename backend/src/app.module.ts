@@ -8,7 +8,6 @@ import { PrismaModule } from './modules/prisma/prisma.module'
 import { ProductsModule } from './modules/products/products.module'
 import { UsersService } from './modules/users/users.service'
 
-
 @Module({
     imports: [
         PrismaModule,
@@ -16,7 +15,7 @@ import { UsersService } from './modules/users/users.service'
         ProductsModule,
         CategoriesModule,
         ServeStaticModule.forRoot({
-            rootPath: path.resolve(__dirname, '..', 'uploads'),
+            rootPath: path.resolve(__dirname, '..', '/uploads'),
             serveStaticOptions: {
                 index: false,
             },

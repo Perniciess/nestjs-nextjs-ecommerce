@@ -6,7 +6,6 @@ import * as express from 'express'
 import { AppModule } from './app.module'
 import { CustomExceptionFilter } from './common/filters/not-found.filter'
 
-
 async function bootstrap() {
     const app = await NestFactory.create(AppModule)
     app.use(cookieParser())
@@ -15,9 +14,10 @@ async function bootstrap() {
     app.enableCors({
         origin: true,
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    credentials: true,
+        credentials: true,
     })
-    app.use('/uploads', express.static(join(process.cwd(), '../', 'uploads')))
+    app.use('/uploads', express.static(join(__dirname, '..', 'uploads')))
+
     await app.listen(3000)
 }
 bootstrap()
