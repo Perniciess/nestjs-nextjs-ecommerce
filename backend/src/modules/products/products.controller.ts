@@ -6,11 +6,16 @@ import { ProductsService } from './products.service'
 
 @Controller('products')
 export class ProductsController {
-    constructor(private productsService: ProductsService) {}
+    constructor(private productsService: ProductsService) { }
 
     @Get('all')
     async getProducts() {
         return this.productsService.getProducts()
+    }
+
+    @Get('allWithoutImage')
+    async getProductsWithoutImage() {
+        return this.productsService.getProductsWithoutImage()
     }
 
     @Get(':id')
@@ -29,3 +34,5 @@ export class ProductsController {
         return this.productsService.addProduct(body, file)
     }
 }
+
+

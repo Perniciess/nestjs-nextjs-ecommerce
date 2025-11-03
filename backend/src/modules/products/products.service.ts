@@ -35,6 +35,34 @@ export class ProductsService {
         })
     }
 
+    async getProductsWithoutImage() {
+        return this.prisma.product.findMany({
+            select: {
+                product_id: true,
+                name: true,
+                price: true,
+                size: true,
+                color: true,
+                image: false,
+                brand: {
+                    select: {
+                        brand_name: true,
+                    },
+                },
+                categories: {
+                    select: {
+                        parent: {
+                            select: {
+                                name: true,
+                            },
+                        },
+                        name: true,
+                    },
+                },
+            },
+        })
+    }
+
     async getProduct(id: string) {
         return this.prisma.product.findUnique({
             where: { product_id: id },
