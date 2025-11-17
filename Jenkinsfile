@@ -44,33 +44,22 @@ pipeline {
 stage('Tests') {
     steps {
         script {
-            // SSH параметры
-            def sshHost = "192.168.0.2"
-            def sshUser = "a1"
-            def sshPassword = "1"
-
-            def stackDbService = "${STACK}_db"   // main_stack_db
-            def dbUser = "${DB_USER}"
-            def dbName = "${DB_NAME}"
-
             echo "Checking frontend availability..."
             sh "curl -kf ${FRONTEND_URL} || (echo 'Frontend DOWN' && exit 1)"
 
             echo "Checking PostgreSQL via SSH..."
-            sh """
-                sshpass -p '${sshPassword}' ssh -o StrictHostKeyChecking=no ${sshUser}@${sshHost} '
-                    # Найти контейнер базы
-                    db_container=\$(docker ps --filter name=${stackDbService} --format "{{.ID}}")
-                    if [ -z "\$db_container" ]; then
-                        echo "No PostgreSQL container found!"
-                        exit 1
-                    fi
-                    echo "Found PostgreSQL container: \$db_container"
 
-                    # Выполнить SQL
-                    PGPASSWORD=${sshPassword} docker exec \$db_container psql -U ${dbUser} -d ${dbName} -c "SELECT NOW();"
-                '
-            """
+	    def nodeName = sh(
+            	script: "docker service ps mydb --format '{{.Node}}' | head -n 1",
+                returnStdout: true
+            trim()
+            
+            echo "Database is running on node: ${nodeName}"
+                    
+            Проверка: база должна быть на другой ноде
+            if (nodeName == "worker1" || nodeName == "worker2") {
+            	error("Database is still on node!")
+            }
         }
     }
 }
