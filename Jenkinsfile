@@ -10,10 +10,10 @@ pipeline {
 
         NEXT_PUBLIC_API_BASE_URL = "https://192.168.0.1/api"
         NEST_WEB_URL = "https://192.168.0.1"
-	
-	FRONTEND_URL = 'https://192.168.0.1'
-	
-	DB_SERVICE   = "db"
+        
+        FRONTEND_URL = 'https://192.168.0.1'
+        
+        DB_SERVICE   = "db"
         DB_USER      = "postgres"
         DB_PASSWORD  = "1"
         DB_NAME      = "mydb"
@@ -24,6 +24,8 @@ pipeline {
         CLIENT_URL   = "https://192.168.0.1"
         COOKIE_DOMAIN= "192.168.0.1"
     }
+
+    **stages {**
 
         stage('Deploy to Swarm') {
             steps {
@@ -42,7 +44,7 @@ pipeline {
         stage('Tests') {
             steps {
                 script {
-		    sleep 15
+                    sleep 15
 
                     echo "Checking frontend availability..."
                     sh "curl -kf ${FRONTEND_URL} || (echo 'Frontend DOWN' && exit 1)"
@@ -50,7 +52,7 @@ pipeline {
                     echo "Locating PostgreSQL container..."
 
                     def dbContainer = sh(
-			script: "docker ps --filter name=${SWARM_STACK_NAME}_${DB_SERVICE} --format '{{.ID}}'",
+                        script: "docker ps --filter name=${STACK}_${DB_SERVICE} --format '{{.ID}}'",
                         returnStdout: true
                     ).trim()
 
@@ -61,7 +63,7 @@ pipeline {
                 }
             }
         }
-    }
+    **}**
 
     post {
         success { echo "Deployment succeeded!" }
