@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique @db.VarChar(55)
+  login     String   @unique @db.VarChar(55)
+  password  String
+  salt      String
+  role      Role     @default(User)
+  is_active Boolean  @default(false)
+  baskets   Basket[]
+}
+
+model Product {
+  product_id  String     @id @default(uuid())
+  name        String
+  price       Decimal    @db.Decimal(9, 2)
+  description String
+  size        String     @db.VarChar(55)
+  color       String
+  image       String
+  category_id String
+  carouselId  String?
+  brand_id    String
+  basket      Basket[]
+  brand       Brand      @relation(fields: [brand_id], references: [brand_id])
+  carousel    Carousel?  @relation(fields: [carouselId], references: [id])
+  categories  Category[] @relation("CategoryToProduct")
+}
+
+model Category {
+  id       String     @id @default(uuid())
+  name     String
+  parentId String?
+  parent   Category?  @relation("SubCategories", fields: [parentId], references: [id])
+  children Category[] @relation("SubCategories")
+  products Product[]  @relation("CategoryToProduct")
+}
+
+model Carousel {
+  id      String    @id @default(uuid())
+  product Product[]
+}
+
+model Brand {
+  brand_name String    @unique
+  brand_id   String    @id @default(uuid())
+  products   Product[]
+}
+
+model Basket {
+  record_id  Int     @id @default(autoincrement())
+  basket_id  Int     @unique
+  user_id    String
+  product_id String
+  amount     Int
+  order      Order   @relation(fields: [basket_id], references: [basket_id])
+  products   Product @relation(fields: [product_id], references: [product_id])
+  user       User    @relation(fields: [user_id], references: [id])
+}
+
+model Order {
+  basket_id   Int     @id @default(autoincrement())
+  address     String
+  payment_key String
+  basket      Basket?
+}
+
+enum Role {
+  User
+  Admin
+  Moder
+}
