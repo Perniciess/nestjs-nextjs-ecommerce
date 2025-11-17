@@ -43,10 +43,11 @@ pipeline {
 
                     // Проверка ноды с базой
                     echo "Checking PostgreSQL node..."
-                    def nodeName = sh(
-                        script: "docker service ps ${DB_SERVICE} --format '{{.Node}}' | head -n 1",
-                        returnStdout: true
-                    ).trim()
+
+		    def nodeName = sh(
+    			script: "docker service ps main_stack_db --format '{{.Node}}' | head -n 1 || true",
+    			returnStdout: true
+		    ).trim()
                     
                     echo "Database is running on node: ${nodeName}"
 
