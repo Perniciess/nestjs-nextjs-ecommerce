@@ -10,9 +10,9 @@ pipeline {
 
         NEXT_PUBLIC_API_BASE_URL = "https://192.168.0.1/api"
         NEST_WEB_URL = "https://192.168.0.1"
-        
+    
         FRONTEND_URL = 'https://192.168.0.1'
-        
+    
         DB_SERVICE   = "db"
         DB_USER      = "postgres"
         DB_PASSWORD  = "1"
@@ -25,7 +25,7 @@ pipeline {
         COOKIE_DOMAIN= "192.168.0.1"
     }
 
-    **stages {**
+    stages {
 
         stage('Deploy to Swarm') {
             steps {
@@ -63,7 +63,7 @@ pipeline {
                 }
             }
         }
-    **}**
+    }
 
     post {
         success { echo "Deployment succeeded!" }
