@@ -8,21 +8,12 @@ pipeline {
         BACKEND_IMAGE  = "exzenzia/backend:v4.6"
         DB_IMAGE       = "exzenzia/database:v2"
 
-        NEXT_PUBLIC_API_BASE_URL = "https://192.168.0.1/api"
-        NEST_WEB_URL = "https://192.168.0.1"
-    
         FRONTEND_URL = 'https://192.168.0.1'
-    
+
         DB_SERVICE   = "db"
         DB_USER      = "postgres"
         DB_PASSWORD  = "1"
         DB_NAME      = "mydb"
-
-        DATABASE_URL = "postgresql://postgres:1@db:5432/mydb?schema=public&connection_limit=5&pool_timeout=0&connect_timeout=10"
-        NODE_ENV     = "production"
-        JWT_SECRET   = "supersecretkey"
-        CLIENT_URL   = "https://192.168.0.1"
-        COOKIE_DOMAIN= "192.168.0.1"
     }
 
     stages {
@@ -31,40 +22,41 @@ pipeline {
             steps {
                 script {
                     sh """
+                        # Инициализация Swarm, если нужно
                         if ! docker info | grep -q 'Swarm: active'; then
                             docker swarm init || true
                         fi
 
+                        # Деплой стека
                         docker stack deploy --with-registry-auth -c docker-compose.yaml ${STACK}
                     """
                 }
             }
         }
 
-stage('Tests') {
-    steps {
-        script {
-            echo "Checking frontend availability..."
-            sh "curl -kf ${FRONTEND_URL} || (echo 'Frontend DOWN' && exit 1)"
+        stage('Tests') {
+            steps {
+                script {
+                    // Проверка фронтенда
+                    echo "Checking frontend availability..."
+                    sh "curl -kf ${FRONTEND_URL} || (echo 'Frontend DOWN' && exit 1)"
 
-            echo "Checking PostgreSQL via SSH..."
-
-	    def nodeName = sh(
-            	script: "docker service ps mydb --format '{{.Node}}' | head -n 1",
-                returnStdout: true
-            trim()
-            
-            echo "Database is running on node: ${nodeName}"
+                    // Проверка ноды с базой
+                    echo "Checking PostgreSQL node..."
+                    def nodeName = sh(
+                        script: "docker service ps ${DB_SERVICE} --format '{{.Node}}' | head -n 1",
+                        returnStdout: true
+                    ).trim()
                     
-            Проверка: база должна быть на другой ноде
-            if (nodeName == "worker1" || nodeName == "worker2") {
-            	error("Database is still on node!")
+                    echo "Database is running on node: ${nodeName}"
+
+                    // Проверка: база должна быть на другой ноде
+                    if (nodeName == "worker1" || nodeName == "worker2") {
+                        error("Database is still on worker1 or worker2!")
+                    }
+                }
             }
         }
-    }
-}
-
-
     }
 
     post {
