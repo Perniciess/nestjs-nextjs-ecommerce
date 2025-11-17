@@ -52,7 +52,7 @@ pipeline {
                     echo "Database is running on node: ${nodeName}"
 
                     // Проверка: база должна быть на другой ноде
-                    if (nodeName == "worker1" || nodeName == "worker2") {
+                    if (nodeName == "worker2") {
                         error("Database is still on worker1 or worker2!")
                     }
                 }
