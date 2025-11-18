@@ -72,7 +72,7 @@ pipeline {
                     echo "Пытаемся зарегистрировать пользователя с существующим логином..."
                     def response = sh(
                         script: """
-                            curl -s -w "\\n%{http_code}" \
+                            curl -k -s -w "\\n%{http_code}" \
                             -X POST "${FRONTEND_URL}/auth/sign-up" \
                             -H "Content-Type: application/json" \
                             -d '${payload}'
