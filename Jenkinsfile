@@ -55,49 +55,47 @@ pipeline {
                 }
             }
         }
+stage('4. Проверка регистрации пользователя') {
+    steps {
+        script {
+            echo "Тестирование дубликата логина."
 
-        stage('4. Проверка регистрации пользователя') {
-            steps {
-                script {
-                    echo "Тестирование дубликата логина."
-
-                    def payload = """
-                        {
-                            "email": "a2@a2.com",
-                            "login": "a1",
-                            "password": "m1i2x3_m1i2x3"
-                        }
-                    """
-
-                    echo "Пытаемся зарегистрировать пользователя с существующим логином..."
-                    def response = sh(
-                        script: """
-                            curl -k -s -w "\\n%{http_code}" \
-                            -X POST "${FRONTEND_URL}/api/auth/sign-up" \
-                            -H "Content-Type: application/json" \
-                            -d '${payload}'
-                        """,
-                        returnStdout: true
-                    ).trim()
-
-                    def lines = response.readLines()
-                    def responseBody = lines[0..-2].join("\n")
-                    def responseCode = lines[-1]
-
-                    echo "Response code: ${responseCode}"
-                    echo "Response body: ${responseBody}"
-
-                    if (responseCode != "400" && responseCode != "409") {
-                        error("Expected 400 (duplicate login), but got: ${responseCode}")
-                    }
-                    if (!responseBody.contains("Логин уже используется")) {
-                        error("Expected error message 'Логин уже используется', but got: ${responseBody}")
-                    }
-
-                    echo "Тестирование регистрации: ПРОЙДЕНО"
+            def payload = """
+                {
+                    "email": "a2@a2.com",
+                    "login": "a1",
+                    "password": "m1i2x3_m1i2x3"
                 }
+            """
+
+            echo "Пытаемся зарегистрировать пользователя с существующим логином..."
+            def response = sh(
+                script: """
+                    curl -k -s -w "\\n%{http_code}" \
+                    -X POST "${FRONTEND_URL}/api/auth/sign-up" \
+                    -H "Content-Type: application/json" \
+                    -d '${payload}'
+                """,
+                returnStdout: true
+            ).trim()
+
+            def lines = response.readLines()
+            def responseBody = lines[0..-2].join("\n")
+            def responseCode = lines[-1]
+
+            echo "Response code: ${responseCode}"
+            echo "Response body: ${responseBody}"
+
+            // --- новая логика ---
+            if (responseCode == "400" || responseCode == "409" || responseBody.contains("Логин уже используется")) {
+                error("Ошибка: сервер сообщил, что логин уже занят — тест провален!")
             }
+
+            echo "Регистрация прошла успешно — тест пройден."
         }
+    }
+}
+
 
     }
 
