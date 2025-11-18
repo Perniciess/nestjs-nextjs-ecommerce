@@ -17,7 +17,13 @@ export class AuthService {
     async signUp(dto: signUpDto) {
         const user = await this.usersService.getByEmail(dto.email)
         if (user) {
-            throw new BadRequestException({ type: 'Почта уже используется' })
+            throw new BadRequestException({ message: 'Почта уже используется' })
+        }
+
+        const userExists = await this.usersService.getByLogin(dto.login)
+        
+        if (userExists) {
+            throw new BadRequestException({ message: 'Логин уже используется' })
         }
 
         const salt = this.passwordService.getSalt()

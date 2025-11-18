@@ -31,6 +31,12 @@ export class UsersService {
         })
     }
 
+    async getByLogin(login: string) {
+        return this.prisma.user.findUnique({
+            where: { login },
+        })
+    }
+
     async getAllUsers() {
         return this.prisma.user.findMany({
             select: {

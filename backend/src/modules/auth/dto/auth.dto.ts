@@ -24,5 +24,3 @@ export class signUpDto extends signInDto {
     @IsString()
     readonly login: string
 }
-
-// Не знаю зачем делаю тут проверку и дополнительным выводом информации если на фронте будет zod для валидации
