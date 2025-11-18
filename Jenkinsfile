@@ -73,7 +73,7 @@ pipeline {
                     def response = sh(
                         script: """
                             curl -k -s -w "\\n%{http_code}" \
-                            -X POST "${FRONTEND_URL}/auth/sign-up" \
+                            -X POST "${FRONTEND_URL}/api/auth/sign-up" \
                             -H "Content-Type: application/json" \
                             -d '${payload}'
                         """,
