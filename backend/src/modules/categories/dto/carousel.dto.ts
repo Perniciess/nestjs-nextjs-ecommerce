@@ -1,4 +1,12 @@
+import { IsNotEmpty, IsString } from 'class-validator'
+
+
 export class CarouselDto {
-	carousel_id: string;
-	product_id: string;
+    @IsNotEmpty()
+    @IsString()
+    readonly carousel_id: string
+
+    @IsNotEmpty()
+    @IsString()
+    readonly product_id: string
 }

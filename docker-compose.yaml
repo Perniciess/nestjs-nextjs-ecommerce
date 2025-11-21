@@ -1,11 +1,9 @@
-version: "3.7"
-
 networks:
   main:
     name: main
 services:
   backend:
-    image: exzenzia/backend:v4.0
+    image: exzenzia/backend:v4.5
     container_name: backend
     restart: always
     ports:
@@ -27,7 +25,7 @@ services:
       - ./postgres-data:/var/lib/postgresql/data
 
   frontend:
-    image: exzenzia/frontend:v4.0
+    image: exzenzia/frontend:v4.5
     container_name: frontend
     ports:
       - "3001:3001"
@@ -35,7 +33,6 @@ services:
       - main
 
   nginx:
-    # container_name: nginx
     image: nginx:1.15.8-alpine
     ports:
         - "1080:80"

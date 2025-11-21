@@ -1,91 +1,82 @@
-import Image from "next/image";
-import { useState } from "react";
-import { UiLink } from "@/shared/ui/ui-link";
-import React from "react";
-import { NextIcon } from "@/shared/ui/icons/ui-next-icon";
-import { BackIcon } from "@/shared/ui/icons/ui-back-icon";
-import { UiButton } from "@/shared/ui/ui-button";
-import { useGetCarousel } from "@/features/admin/model/use-get-carousel";
+import { BackIcon } from '@/shared/ui/icons/ui-back-icon'
+import { NextIcon } from '@/shared/ui/icons/ui-next-icon'
+import { UiButton } from '@/shared/ui/ui-button'
+import { UiLink } from '@/shared/ui/ui-link'
+import Image from 'next/image'
+import { useState } from 'react'
+import { useGetCarousel } from '../api/use-description'
 
 export function UiDescription() {
-    const [activeImage, setActiveImage] = useState(0);
-    const { data: carousel } = useGetCarousel();
-    const clickNext = () => {
-        if (carousel && carousel[0].product) {
-            const productCount = carousel[0].product.length;
-            setActiveImage((activeImage + 1) % productCount);
-        }
-    };
+    const [activeImage, setActiveImage] = useState(0)
+    const { data: carousel, isPending } = useGetCarousel()
 
-    const clickPrev = () => {
-        if (carousel && carousel[0].product) {
-            const productCount = carousel[0].product.length;
-            setActiveImage((activeImage - 1 + productCount) % productCount);
-        }
-    };
-    if (!carousel || !carousel[0].product) {
-        return <div>Loading...</div>;
+    if (isPending) {
+        return <div>Loading...</div>
     }
 
-    const web_url = process.env.NEST_WEB_URL;
+    if (carousel === null || carousel === undefined || carousel.length === 0) {
+        return <div>No carousel data found.</div>
+    }
+
+    const clickNext = () => {
+        const productCount = carousel[0]?.product?.length ?? 0
+        if (productCount > 0) {
+            setActiveImage((activeImage + 1) % productCount)
+        }
+    }
+
+    const clickPrev = () => {
+        const productCount = carousel[0]?.product?.length ?? 0
+        if (productCount > 0) {
+            setActiveImage((activeImage - 1 + productCount) % productCount)
+        }
+    }
 
     const product = carousel[0].product[activeImage]
 
-    const product_image = product.image.split("\\")[1];
     return (
         <>
-            <div className="place-items-center grid grid-cols-2 xs:grid-cols-1 xxs:grid-cols-1 shadow-2xl mx-auto mt-20 mb-8 rounded-3xl w-full max-w-5xl">
-                <div className="relative flex justify-center items-center rounded-2xl w-full h-[30vh] overflow-hidden">
-                    <div className="block w-full h-full absolute top-0 left-0">
+            <div className="xs:grid-cols-1 xxs:grid-cols-1 mx-auto mb-8 mt-20 grid w-full max-w-5xl grid-cols-2 place-items-center rounded-3xl shadow-2xl inset-ring-1 inset-ring-zinc-200">
+                <div className="relative flex h-[30vh] w-full items-center justify-center overflow-hidden rounded-2xl">
+                    <div className="absolute left-0 top-0 block size-full">
                         <Image
-                            src={`${web_url}uploads/${product_image}`}
+                            src={product.image}
                             alt=""
                             layout="fill"
                             objectFit="contain"
-                            className="rounded-tl-3xl rounded-bl-3xl"
+                            className="rounded-l-3xl"
                         />
                     </div>
                 </div>
 
-                <div className="place-items-start grid bg-[#17171BFF] p-4 md:rounded-tr-3xl md:rounded-br-3xl w-full">
-                    <div className="block w-full h-[60vh] px-10 text-left relative">
+                <div className="grid w-full place-items-start bg-zinc-950 p-4 md:rounded-r-3xl">
+                    <div className="relative block h-[60vh] w-full px-10 text-left">
                         <div className="flex flex-col py-8 text-white">
-                            <div className="font-extrabold text-4xl">
-                                {product.brand.brand_name} {product.name}
+                            <div className="text-4xl font-extrabold">
+                                {product.brand.brand_name}
+                                {' '}
+                                {product.name}
                             </div>
-                            <div className="top-40 absolute price-container">
-                                <div className="font-medium text-lg italic tracking-wide">
+                            <div className="absolute top-40">
+                                <div className="text-lg font-medium italic tracking-wide">
                                     {product.price}
+                                    {' '}
+                                    ₽
                                 </div>
                             </div>
                         </div>
-                        <div className="right-4 bottom-2 left-4 absolute flex justify-between items-center">
-                            <UiLink
-                                variant="none"
-                                href={`/products/id?id=${product.product_id}`}
-                            >
+                        <div className="absolute inset-x-4 bottom-2 flex items-center justify-between">
+                            <UiLink variant="none" href={`/products/id?id=${product.product_id}`}>
                                 <UiButton variant="white" className="uppercase">
                                     Заказать
                                 </UiButton>
                             </UiLink>
                             <div className="flex items-center">
-                                <div
-                                    className="cursor-pointer"
-                                    onClick={clickNext}
-                                >
-                                    <NextIcon
-                                        color="white"
-                                        className="w-12 h-12"
-                                    />
+                                <div className="cursor-pointer" onClick={clickNext}>
+                                    <NextIcon color="white" className="size-12" />
                                 </div>
-                                <div
-                                    className="mr-2 cursor-pointer"
-                                    onClick={clickPrev}
-                                >
-                                    <BackIcon
-                                        color="white"
-                                        className="w-12 h-12"
-                                    />
+                                <div className="mr-2 cursor-pointer" onClick={clickPrev}>
+                                    <BackIcon color="white" className="size-12" />
                                 </div>
                             </div>
                         </div>
@@ -93,5 +84,5 @@ export function UiDescription() {
                 </div>
             </div>
         </>
-    );
+    )
 }

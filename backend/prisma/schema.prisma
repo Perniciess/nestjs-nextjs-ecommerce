@@ -8,10 +8,10 @@ datasource db {
 }
 
 model User {
-  id        String      @id @default(uuid())
+  id        String   @id @default(uuid())
   email     String   @unique @db.VarChar(55)
   login     String   @unique @db.VarChar(55)
-  hash      String
+  password  String
   salt      String
   role      Role     @default(User)
   is_active Boolean  @default(false)
@@ -26,9 +26,9 @@ model Product {
   size        String     @db.VarChar(55)
   color       String
   image       String
-  brand_id    String
   category_id String
   carouselId  String?
+  brand_id    String
   basket      Basket[]
   brand       Brand      @relation(fields: [brand_id], references: [brand_id])
   carousel    Carousel?  @relation(fields: [carouselId], references: [id])
@@ -50,8 +50,8 @@ model Carousel {
 }
 
 model Brand {
-  brand_id   String    @id @default(uuid())
   brand_name String    @unique
+  brand_id   String    @id @default(uuid())
   products   Product[]
 }
 

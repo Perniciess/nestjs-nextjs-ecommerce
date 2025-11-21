@@ -10,16 +10,17 @@ import { JwtStrategy } from './jwt.strategy'
 import { PasswordService } from './password.service'
 
 @Module({
-	imports: [
-		ConfigModule,
-		JwtModule.registerAsync({
-			imports: [ConfigModule],
-			inject: [ConfigService],
-			useFactory: getJwtConfig,
-		}),
-		UsersModule,
-	],
-	controllers: [AuthController],
-	providers: [AuthService, PasswordService, CookieService, JwtStrategy],
+    imports: [
+        ConfigModule,
+        JwtModule.registerAsync({
+            imports: [ConfigModule],
+            inject: [ConfigService],
+            useFactory: getJwtConfig,
+        }),
+        UsersModule,
+    ],
+    controllers: [AuthController],
+    exports: [PasswordService],
+    providers: [AuthService, PasswordService, CookieService, JwtStrategy],
 })
 export class AuthModule {}

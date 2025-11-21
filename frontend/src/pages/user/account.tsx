@@ -1,16 +1,16 @@
-import { UpdateEmailForm } from "@/features/account/ui/update-email-form";
-import { UpdateLoginForm } from "@/features/account/ui/update-login-form";
+import AccountChanges from "@/entities/user/ui/account";
 import { UiLayoutUserPage } from "@/shared/ui/layouts/ui-layout-user-page";
-
+import { usePathname } from "next/navigation";
 
 export default function AccountPage() {
-    return (
-        <UiLayoutUserPage
-            title="Профиль"
-            description="Обновите настройки своей учетной записи."
-        >
-            <UpdateLoginForm />
-            <UpdateEmailForm />
-        </UiLayoutUserPage>
-    );
+  const pathname = usePathname();
+  return (
+    <UiLayoutUserPage
+      pathname={pathname}
+      title="Профиль"
+      description="Обновите настройки своей учетной записи."
+    >
+      <AccountChanges />
+    </UiLayoutUserPage>
+  );
 }

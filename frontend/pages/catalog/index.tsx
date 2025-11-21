@@ -1,2 +1,2 @@
-import CatalogPage from '@/pages/catalog/ui/catalog';
+import CatalogPage from '@/pages/catalog/index'
 export default CatalogPage

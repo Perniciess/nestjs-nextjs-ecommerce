@@ -1,77 +1,86 @@
+/* eslint-disable ts/consistent-type-imports */
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
+import { CreateUserDto } from './../users/dto/user.dto'
 import { UsersService } from './../users/users.service'
-import { signInDto } from './dto/signIn.dto'
-import { signUpDto } from './dto/signUp.dto'
+import { signInDto, signUpDto } from './dto/auth.dto'
 import { PasswordService } from './password.service'
 
 @Injectable()
 export class AuthService {
-	constructor(
-		private usersService: UsersService,
-		private passwordService: PasswordService,
-		private jwtService: JwtService,
-	) {}
+    constructor(
+        private usersService: UsersService,
+        private passwordService: PasswordService,
+        private jwtService: JwtService,
+    ) {}
 
-	async signUp(dto: signUpDto) {
-		const user = await this.usersService.findByEmail(dto.email)
-		if (user) {
-			throw new BadRequestException({ type: 'Почта уже используется' })
-		}
+    async signUp(dto: signUpDto) {
+        const user = await this.usersService.getByEmail(dto.email)
+        if (user) {
+            throw new BadRequestException({ type: 'Почта уже используется' })
+        }
 
-		const salt = this.passwordService.getSalt()
-		const hash = this.passwordService.getHash(dto.password, salt)
-		const newUser = await this.usersService.createUser(dto.email, dto.login, hash, salt)
+        const salt = this.passwordService.getSalt()
+        const password = this.passwordService.getHash(dto.password, salt)
 
-		return this.issueToken(newUser.id)
-	}
+        const createUserDto: CreateUserDto = {
+            email: dto.email,
+            login: dto.login,
+            password,
+            salt,
+        }
+        const newUser = await this.usersService.createUser(createUserDto)
 
-	async signIn(dto: signInDto) {
-		const user = await this.usersService.findById(dto.email)
-		if (!user) {
-			throw new UnauthorizedException({ type: 'Пользователь не найден' })
-		}
+        return this.issueToken(newUser.id)
+    }
 
-		const hash = this.passwordService.getHash(dto.password, user.salt)
-		if (hash !== user.hash) {
-			throw new UnauthorizedException({ type: 'Wrong password' })
-		}
+    async signIn(dto: signInDto) {
+        const user = await this.usersService.getByEmail(dto.email)
+        if (!user) {
+            throw new UnauthorizedException({ type: 'Пользователь не найден' })
+        }
 
-		return this.issueToken(user.id)
-	}
+        const password = this.passwordService.getHash(dto.password, user.salt)
+        if (password !== user.password) {
+            throw new UnauthorizedException({ type: 'Wrong password' })
+        }
 
-	private issueToken(userId: string) {
-		const accessToken = this.jwtService.sign({
-			id: userId,
-			expiresIn: '1h',
-		})
+        return this.issueToken(user.id)
+    }
 
-		const refreshToken = this.jwtService.sign({
-			id: userId,
-			expiresIn: '7d',
-		})
+    private issueToken(userId: string) {
+        const accessToken = this.jwtService.sign({
+            id: userId,
+            expiresIn: '1h',
+        })
 
-		return { accessToken, refreshToken }
-	}
+        const refreshToken = this.jwtService.sign({
+            id: userId,
+            expiresIn: '7d',
+        })
 
-	async getNewTokens(refreshToken: string) {
-		const result = await this.jwtService.verifyAsync(refreshToken)
+        return { accessToken, refreshToken }
+    }
 
-		if (!result) throw new UnauthorizedException('Invalid refresh token')
+    async getNewTokens(refreshToken: string) {
+        const result = await this.jwtService.verifyAsync(refreshToken)
 
-		const { ...userResult } = await this.usersService.findById(result.id)
+        if (!result)
+            throw new UnauthorizedException('Invalid refresh token')
 
-		if (!userResult) {
-			throw new UnauthorizedException({ type: 'User not found' })
-		}
+        const { ...userResult } = await this.usersService.getById(result.id)
 
-		const { hash, salt, ...user } = userResult
+        if (!userResult) {
+            throw new UnauthorizedException({ type: 'User not found' })
+        }
 
-		const tokens = this.issueToken(user.id)
+        const { password, salt, ...user } = userResult
 
-		return {
-			user,
-			...tokens,
-		}
-	}
+        const tokens = this.issueToken(user.id)
+
+        return {
+            user,
+            ...tokens,
+        }
+    }
 }
