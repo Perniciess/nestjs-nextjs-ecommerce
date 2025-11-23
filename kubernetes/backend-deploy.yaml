@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+spec:
+  selector:
+    matchLabels:
+      app: backend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      nodeSelector:
+        role: worker2
+      containers:
+        - name: backend
+          image: exzenzia/backend:v4.6
+          ports:
+            - containerPort: 3000
+          env:
+            - name: DATABASE_URL
+              value: "postgresql://postgres:1@postgres:5432/postgres?schema=public"
+            - name: NODE_ENV
+              value: production
+            - name: JWT_SECRET
+              value: supersecretkey
+            - name: CLIENT_URL
+              value: "https://192.168.0.1"
+            - name: COOKIE_DOMAIN
+              value: "192.168.0.1"
