@@ -1,0 +1,211 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+    name: patroni
+    namespace: default
+    labels:
+        app: patroni
+        cluster: postgres-cluster
+spec:
+    serviceName: patroni
+    replicas: 2
+    selector:
+        matchLabels:
+            app: patroni
+            cluster: postgres-cluster
+    template:
+        metadata:
+            labels:
+                app: patroni
+                cluster: postgres-cluster
+        spec:
+            serviceAccountName: patroni
+            affinity:
+                podAntiAffinity:
+                    requiredDuringSchedulingIgnoredDuringExecution:
+                        - labelSelector:
+                              matchLabels:
+                                  app: patroni
+                                  cluster: postgres-cluster
+                          topologyKey: kubernetes.io/hostname
+                nodeAffinity:
+                    requiredDuringSchedulingIgnoredDuringExecution:
+                        nodeSelectorTerms:
+                            - matchExpressions:
+                                  - key: role
+                                    operator: In
+                                    values:
+                                        - worker1
+                                        - worker2
+            containers:
+                - name: patroni
+                  image: patroni/patroni:3.2.2
+                  imagePullPolicy: IfNotPresent
+                  ports:
+                      - containerPort: 5432
+                        name: postgresql
+                        protocol: TCP
+                      - containerPort: 8008
+                        name: patroni
+                        protocol: TCP
+                  env:
+                      - name: POD_NAME
+                        valueFrom:
+                            fieldRef:
+                                fieldPath: metadata.name
+                      - name: POD_IP
+                        valueFrom:
+                            fieldRef:
+                                fieldPath: status.podIP
+                      - name: PATRONI_KUBERNETES_NAMESPACE
+                        valueFrom:
+                            fieldRef:
+                                fieldPath: metadata.namespace
+                      - name: PATRONI_KUBERNETES_POD_IP
+                        valueFrom:
+                            fieldRef:
+                                fieldPath: status.podIP
+                      - name: PATRONI_KUBERNETES_PORTS
+                        value: '[{"name": "postgresql", "port": 5432}]'
+                      - name: PATRONI_NAME
+                        valueFrom:
+                            fieldRef:
+                                fieldPath: metadata.name
+                      - name: PATRONI_SCOPE
+                        value: postgres-cluster
+                      - name: PATRONI_KUBERNETES_LABELS
+                        value: '{"app": "patroni", "cluster": "postgres-cluster"}'
+                      - name: PATRONI_KUBERNETES_USE_ENDPOINTS
+                        value: "true"
+                      - name: PATRONI_SUPERUSER_USERNAME
+                        value: postgres
+                      - name: PATRONI_SUPERUSER_PASSWORD
+                        value: "1"
+                      - name: PATRONI_REPLICATION_USERNAME
+                        value: replicator
+                      - name: PATRONI_REPLICATION_PASSWORD
+                        value: replicator
+                      - name: PATRONI_admin_PASSWORD
+                        value: admin
+                      - name: PATRONI_admin_OPTIONS
+                        value: createrole,createdb
+                      - name: PATRONI_POSTGRESQL_DATA_DIR
+                        value: /var/lib/postgresql/data/pgdata
+                      - name: PATRONI_POSTGRESQL_LISTEN
+                        value: "0.0.0.0:5432"
+                      - name: PATRONI_RESTAPI_LISTEN
+                        value: "0.0.0.0:8008"
+                      - name: PATRONI_LOG_LEVEL
+                        value: INFO
+                  volumeMounts:
+                      - name: data
+                        mountPath: /var/lib/postgresql/data
+                      - name: config
+                        mountPath: /etc/patroni
+                  livenessProbe:
+                      httpGet:
+                          path: /liveness
+                          port: 8008
+                          scheme: HTTP
+                      initialDelaySeconds: 30
+                      periodSeconds: 10
+                      timeoutSeconds: 5
+                      failureThreshold: 3
+                  readinessProbe:
+                      httpGet:
+                          path: /readiness
+                          port: 8008
+                          scheme: HTTP
+                      initialDelaySeconds: 10
+                      periodSeconds: 10
+                      timeoutSeconds: 5
+                      failureThreshold: 3
+                  resources:
+                      requests:
+                          memory: "256Mi"
+                          cpu: "250m"
+                      limits:
+                          memory: "1Gi"
+                          cpu: "1000m"
+            volumes:
+                - name: config
+                  configMap:
+                      name: patroni-config
+    volumeClaimTemplates:
+        - metadata:
+              name: data
+              labels:
+                  app: patroni
+          spec:
+              accessModes:
+                  - ReadWriteOnce
+              resources:
+                  requests:
+                      storage: 5Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: patroni
+    namespace: default
+    labels:
+        app: patroni
+        cluster: postgres-cluster
+spec:
+    type: ClusterIP
+    clusterIP: None
+    ports:
+        - port: 5432
+          targetPort: 5432
+          protocol: TCP
+          name: postgresql
+        - port: 8008
+          targetPort: 8008
+          protocol: TCP
+          name: patroni
+    selector:
+        app: patroni
+        cluster: postgres-cluster
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: patroni-master
+    namespace: default
+    labels:
+        app: patroni
+        cluster: postgres-cluster
+spec:
+    type: ClusterIP
+    ports:
+        - port: 5432
+          targetPort: 5432
+          protocol: TCP
+          name: postgresql
+    selector:
+        app: patroni
+        cluster: postgres-cluster
+        role: master
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: patroni-replica
+    namespace: default
+    labels:
+        app: patroni
+        cluster: postgres-cluster
+spec:
+    type: ClusterIP
+    ports:
+        - port: 5432
+          targetPort: 5432
+          protocol: TCP
+          name: postgresql
+    selector:
+        app: patroni
+        cluster: postgres-cluster
+        role: replica
