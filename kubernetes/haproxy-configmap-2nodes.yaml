@@ -28,7 +28,7 @@ data:
 
         listen primary
             bind *:5000
-            option httpchk GET /master
+            option httpchk GET /primary
             http-check expect status 200
             default-server inter 3s fall 3 rise 2 on-marked-down shutdown-sessions
             server patroni-0 patroni-0.patroni.default.svc.cluster.local:5432 maxconn 100 check port 8008

@@ -18,19 +18,41 @@ spec:
             containers:
                 - name: backend
                   image: exzenzia/backend:v4.6
+                  command: ["/bin/sh", "-c"]
+                  args:
+                      [
+                          "npx prisma generate && npx prisma db push --accept-data-loss && node dist/main.js",
+                      ]
                   ports:
                       - containerPort: 3000
                   env:
                       - name: DATABASE_URL
-                        value: "postgresql://postgres:1@postgres:5432/postgres?schema=public"
+                        value: "postgresql://postgres:1@postgres-primary:5432/ecommerce?schema=public"
                       - name: NODE_ENV
                         value: production
                       - name: JWT_SECRET
                         value: supersecretkey
                       - name: CLIENT_URL
-                        value: "https://192.168.0.1"
+                        value: "https://192.168.0.2"
                       - name: COOKIE_DOMAIN
-                        value: "192.168.0.1"
+                        value: "192.168.0.2"
+                  resources:
+                      requests:
+                          memory: "128Mi"
+                          cpu: "100m"
+                      limits:
+                          memory: "512Mi"
+                          cpu: "500m"
+                  readinessProbe:
+                      tcpSocket:
+                          port: 3000
+                      initialDelaySeconds: 20
+                      periodSeconds: 5
+                  livenessProbe:
+                      tcpSocket:
+                          port: 3000
+                      initialDelaySeconds: 60
+                      periodSeconds: 10
 
 ---
 apiVersion: v1

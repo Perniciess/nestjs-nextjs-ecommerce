@@ -21,6 +21,7 @@ rules:
           - configmaps
       verbs:
           - create
+          - delete
           - get
           - list
           - patch
@@ -32,6 +33,7 @@ rules:
           - endpoints
       verbs:
           - create
+          - delete
           - get
           - list
           - patch
