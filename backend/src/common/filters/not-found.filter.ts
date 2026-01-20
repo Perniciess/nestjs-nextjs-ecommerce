@@ -10,7 +10,7 @@ export class CustomExceptionFilter implements ExceptionFilter {
 
         let status = HttpStatus.INTERNAL_SERVER_ERROR
         let message: string | string[] = 'Internal server error'
-
+        console.error('🔥 Exception caught by CustomExceptionFilter:', exception);
         if (exception.message && exception.message.includes('ENOENT: no such file or directory')) {
             status = HttpStatus.NOT_FOUND
             message = 'Custom error: bad URL.'
@@ -36,3 +36,4 @@ export class CustomExceptionFilter implements ExceptionFilter {
         })
     }
 }
+
