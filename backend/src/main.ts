@@ -7,7 +7,10 @@ import { AppModule } from './app.module'
 import { CustomExceptionFilter } from './common/filters/not-found.filter'
 
 async function bootstrap() {
-    const app = await NestFactory.create(AppModule)
+    const app = await NestFactory.create(AppModule, {
+      logger: ['log', 'error', 'warn', 'debug', 'verbose'],
+    });
+
 
     app.use(cookieParser())
     app.useGlobalPipes(new ValidationPipe())
