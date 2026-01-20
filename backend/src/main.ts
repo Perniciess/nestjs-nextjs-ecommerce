@@ -22,6 +22,6 @@ async function bootstrap() {
     // Правильный путь к папке uploads
     app.use('/uploads', express.static(join(__dirname, '..', 'uploads')))
 
-    await app.listen(3000, '0.0.0.0')
+    await app.listen(3001, '0.0.0.0')
 }
 bootstrap()
