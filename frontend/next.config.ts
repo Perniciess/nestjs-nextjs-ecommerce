@@ -13,22 +13,15 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: '192.168.0.1',
+        protocol: 'http',
+        hostname: '192.168.1.100',
+        port: '30080',
         pathname: '/uploads/**',
       },
     ],
     unoptimized: true,
   },
-
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_BASE_URL}/:path*`,
-      },
-    ];
-  },
 };
 
 export default nextConfig;
+
