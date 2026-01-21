@@ -11,7 +11,7 @@ export class CookieService {
 		expiresIn.setDate(expiresIn.getDate() + this.EXPIRE_DAY_REFRESH_TOKEN)
 
 		res.cookie(this.REFRESH_TOKEN_NAME, refreshToken, {
-			httpOnly: true,
+			httpOnly: false,
 			domain: process.env.COOKIE_DOMAIN,
 			expires: expiresIn,
 			secure: true,
@@ -21,7 +21,7 @@ export class CookieService {
 
 	removeRefreshToken(res: Response) {
 		res.cookie(this.REFRESH_TOKEN_NAME, '', {
-			httpOnly: true,
+			httpOnly: false,
 			domain: process.env.COOKIE_DOMAIN,
 			expires: new Date(0),
 			secure: true,
@@ -29,3 +29,4 @@ export class CookieService {
 		})
 	}
 }
+
