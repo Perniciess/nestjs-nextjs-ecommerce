@@ -1,5 +1,5 @@
 # ========== Stage 1: Builder ==========
-FROM node:21-alpine AS builder
+FROM node:22-alpine AS builder
 WORKDIR /app
 
 COPY package.json yarn.lock ./
@@ -11,7 +11,7 @@ RUN npx prisma generate
 RUN yarn build
 
 # ========== Stage 2: Runtime ==========
-FROM node:21-alpine AS runner
+FROM node:22-alpine AS runner
 WORKDIR /app
 
 COPY --from=builder /app/dist ./dist

@@ -1,15 +1,32 @@
-### Todo list
-- [x] Fix "ENOENT" 
-- [x] Started working on redesigning the frontend part:
-	- [x] Return widgets/description and catalog
-	- [x] Fix FSD design features/auth
-	- [x] Fix FSD design in entities
-	- [x] Check FSD errors in widgets
-	- [ ] Add Zustand
-
-### Notes for dev
-NEST_WEB_URL="http://localhost:3000/"
-"ENOENT" if request on wrong URL
-
-
-shadcnui
+● ✅ Отлично! Сайт доступен с хостовой машины!                                                                           
+                                                                                                                         
+  Я настроил port-forward для доступа к приложению. Теперь откройте в браузере:                                          
+                                                                                                                         
+  https://localhost:8443                                                                                                 
+                                                                                                                         
+  Примечание:                                                                                                            
+  - При первом открытии браузер покажет предупреждение о небезопасном соединении (так как используется самоподписанный   
+  SSL сертификат)                                                                                                        
+  - Нажмите "Дополнительно" → "Продолжить на localhost" (или аналогичную кнопку в вашем браузере)                        
+                                                                                                                         
+  ---                                                                                                                    
+  Почему не работал 172.21.0.3:                                                                                          
+                                                                                                                         
+  IP адреса 172.21.0.x - это внутренние IP адреса Docker сети k3d кластера. Они доступны только внутри Docker            
+  контейнеров, но не доступны напрямую с хостовой машины.                                                                
+                                                                                                                         
+  Как работает сейчас:                                                                                                   
+                                                                                                                         
+  Port-forward проксирует трафик:                                                                                        
+  - localhost:8080 (HTTP) → nginx service порт 80                                                                        
+  - localhost:8443 (HTTPS) → nginx service порт 443                                                                      
+                                                                                                                         
+  Автоматический запуск при перезагрузке:                                                                                
+                                                                                                                         
+  Чтобы не запускать port-forward вручную каждый раз, добавьте в терминал:                                               
+                                                                                                                         
+  kubectl port-forward -n app svc/nginx 8080:80 8443:443                                                                 
+                                                                                                                         
+  Или оставьте текущий процесс работать в фоне (PID: 221313).                                                            
+                                                                                                                         
+  Сайт готов к использованию по адресу https://localhost:8443 🎉       

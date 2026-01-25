@@ -1,69 +1,83 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-    name: backend
-    namespace: default
+  name: backend
+  namespace: app
 spec:
-    selector:
-        matchLabels:
-            app: backend
-    replicas: 1
-    template:
-        metadata:
-            labels:
-                app: backend
-        spec:
-            nodeSelector:
-                role: worker1
-            containers:
-                - name: backend
-                  image: exzenzia/backend:v4.6
-                  command: ["/bin/sh", "-c"]
-                  args:
-                      [
-                          "npx prisma generate && npx prisma db push --accept-data-loss && node dist/main.js",
-                      ]
-                  ports:
-                      - containerPort: 3000
-                  env:
-                      - name: DATABASE_URL
-                        value: "postgresql://postgres:1@postgres-primary:5432/ecommerce?schema=public"
-                      - name: NODE_ENV
-                        value: production
-                      - name: JWT_SECRET
-                        value: supersecretkey
-                      - name: CLIENT_URL
-                        value: "https://192.168.0.2"
-                      - name: COOKIE_DOMAIN
-                        value: "192.168.0.2"
-                  resources:
-                      requests:
-                          memory: "128Mi"
-                          cpu: "100m"
-                      limits:
-                          memory: "512Mi"
-                          cpu: "500m"
-                  readinessProbe:
-                      tcpSocket:
-                          port: 3000
-                      initialDelaySeconds: 20
-                      periodSeconds: 5
-                  livenessProbe:
-                      tcpSocket:
-                          port: 3000
-                      initialDelaySeconds: 60
-                      periodSeconds: 10
-
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      nodeSelector:
+        workload: app
+      containers:
+      - name: backend
+        image: backend:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3001
+          name: http
+        envFrom:
+        - secretRef:
+            name: backend-secret
+        volumeMounts:
+        - name: uploads
+          mountPath: /app/uploads
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          tcpSocket:
+            port: 3001
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          tcpSocket:
+            port: 3001
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+      volumes:
+      - name: uploads
+        persistentVolumeClaim:
+          claimName: backend-uploads-pvc
 ---
 apiVersion: v1
 kind: Service
 metadata:
-    name: backend
-    namespace: default
+  name: backend
+  namespace: app
 spec:
-    selector:
-        app: backend
-    ports:
-        - port: 3000
-          targetPort: 3000
-    type: ClusterIP
+  selector:
+    app: backend
+  ports:
+  - protocol: TCP
+    port: 3001
+    targetPort: 3001
+    name: http
+  type: ClusterIP
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: backend-uploads-pvc
+  namespace: app
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 5Gi
