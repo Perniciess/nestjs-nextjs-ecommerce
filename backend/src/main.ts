@@ -25,6 +25,8 @@ async function bootstrap() {
     // Правильный путь к папке uploads
     app.use('/uploads', express.static(join(__dirname, '..', 'uploads')))
 
-    await app.listen(3001, '0.0.0.0')
+    const port = process.env.PORT || 3000
+    await app.listen(port, '0.0.0.0')
+    console.log(`Server running on port ${port}`)
 }
 bootstrap()

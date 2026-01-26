@@ -1,3 +1,4 @@
+import { join } from 'node:path'
 import { Module } from '@nestjs/common'
 import { MulterModule } from '@nestjs/platform-express'
 import { diskStorage } from 'multer'
@@ -10,7 +11,7 @@ import { ProductsService } from './products.service'
     imports: [
         MulterModule.register({
             storage: diskStorage({
-                destination: '/uploads',
+                destination: join(process.cwd(), 'uploads'),
                 filename: (req, file, cb) => {
                     const filename = `${Date.now()}-${file.originalname}`
                     cb(null, filename)

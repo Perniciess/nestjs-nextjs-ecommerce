@@ -1,0 +1,33 @@
+apiVersion: acid.zalan.do/v1                                                                                                                                                           
+kind: postgresql                                                                                                                                                                       
+metadata:                                                                                                                                                                              
+  name: postgres-cluster                                                                                                                                                               
+  namespace: database                                                                                                                                                                  
+spec:                                                                                                                                                                                  
+  teamId: "ecommerce"                                                                                                                                                                  
+  volume:                                                                                                                                                                              
+    size: 5Gi                                                                                                                                                                          
+  numberOfInstances: 2                                                                                                                                                                 
+  users:                                                                                                                                                                               
+    appuser:                                                                                                                                                                           
+      - superuser                                                                                                                                                                      
+      - createdb                                                                                                                                                                       
+  databases:                                                                                                                                                                           
+    ecommerce: appuser                                                                                                                                                                 
+  postgresql:                                                                                                                                                                          
+    version: "16"                                                                                                                                                                      
+  nodeAffinity:                                                                                                                                                                        
+    requiredDuringSchedulingIgnoredDuringExecution:                                                                                                                                    
+      nodeSelectorTerms:                                                                                                                                                               
+        - matchExpressions:                                                                                                                                                            
+            - key: workload                                                                                                                                                            
+              operator: In                                                                                                                                                             
+              values:                                                                                                                                                                  
+                - db                                                                                                                                                                   
+  resources:                                                                                                                                                                           
+    requests:                                                                                                                                                                          
+      cpu: 250m                                                                                                                                                                        
+      memory: 512Mi                                                                                                                                                                    
+    limits:                                                                                                                                                                            
+      cpu: "1"                                                                                                                                                                         
+      memory: 2Gi 

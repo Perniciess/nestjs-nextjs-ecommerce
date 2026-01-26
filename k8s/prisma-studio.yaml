@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prisma-studio
+  namespace: ecommerce
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prisma-studio
+  template:
+    metadata:
+      labels:
+        app: prisma-studio
+    spec:
+      nodeSelector:
+        workload: app
+      securityContext:
+        runAsUser: 0
+      containers:
+        - name: prisma-studio
+          image: exzenzia/backend:v7
+          command: ["npx", "prisma", "studio", "--port", "5555", "--browser", "none"]
+          ports:
+            - containerPort: 5555
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: DATABASE_URL
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prisma-studio
+  namespace: ecommerce
+spec:
+  type: NodePort
+  selector:
+    app: prisma-studio
+  ports:
+    - port: 5555
+      targetPort: 5555
+      nodePort: 30555
