@@ -4,8 +4,14 @@ export interface IUser {
 	email: string
 }
 
+export interface IUserListItem extends IUser {
+	role: string
+}
+
 export interface IProfileResponse {
 	user: IUser
 }
 
 export type TypeUserForm = Omit<IUser, 'id'> & { password?: string }
+
+export type UserListResponse = IUserListItem[]

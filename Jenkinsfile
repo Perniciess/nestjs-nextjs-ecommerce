@@ -2,11 +2,11 @@ pipeline {
     agent any
 
     environment {
-        STACK = "main_stack"
+        STACK = "app"
 
-        FRONTEND_IMAGE = "exzenzia/frontend:v4.6"
+        FRONTEND_IMAGE = "exzenzia/frontend:v5"
         BACKEND_IMAGE  = "exzenzia/backend:v4.6"
-        DB_IMAGE       = "exzenzia/database:v2"
+        DB_IMAGE       = "exzenzia/database:v2.1"
 
         FRONTEND_URL = 'https://192.168.0.1'
 
@@ -18,20 +18,7 @@ pipeline {
 
     stages {
 
-        stage('1. Развертывание') {
-            steps {
-                script {
-                    sh """
-                        if ! docker info | grep -q 'Swarm: active'; then
-                            docker swarm init || true
-                        fi
-                        docker stack deploy --with-registry-auth -c docker-compose.yaml ${STACK}
-                    """
-                }
-            }
-        }
-
-        stage('2. Проверка фронтенда') {
+        stage('1. Проверка фронтенда') {
             steps {
                 script {
                     echo "Проверяем фронтенд..."
@@ -40,7 +27,7 @@ pipeline {
             }
         }
 
-        stage('3. Проверка базы данных') {
+        stage('2. Проверка базы данных') {
             steps {
                 script {
                     echo "Checking PostgreSQL node..."
@@ -55,7 +42,7 @@ pipeline {
                 }
             }
         }
-stage('4. Проверка регистрации пользователя') {
+stage('3. Проверка регистрации пользователя') {
     steps {
         script {
             echo "Тестирование дубликата логина."

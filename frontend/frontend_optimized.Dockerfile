@@ -11,6 +11,9 @@ RUN yarn install --frozen-lockfile
 # Копируем исходники
 COPY . .
 
+ARG NEXT_PUBLIC_API_BASE_URL
+ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
+
 # Сборка
 RUN yarn build
 

@@ -7,7 +7,10 @@ import { AppModule } from './app.module'
 import { CustomExceptionFilter } from './common/filters/not-found.filter'
 
 async function bootstrap() {
-    const app = await NestFactory.create(AppModule)
+    const app = await NestFactory.create(AppModule, {
+      logger: ['log', 'error', 'warn', 'debug', 'verbose'],
+    });
+
 
     app.use(cookieParser())
     app.useGlobalPipes(new ValidationPipe())
@@ -22,6 +25,8 @@ async function bootstrap() {
     // Правильный путь к папке uploads
     app.use('/uploads', express.static(join(__dirname, '..', 'uploads')))
 
-    await app.listen(3000, '0.0.0.0')
+    const port = process.env.PORT || 3000
+    await app.listen(port, '0.0.0.0')
+    console.log(`Server running on port ${port}`)
 }
 bootstrap()

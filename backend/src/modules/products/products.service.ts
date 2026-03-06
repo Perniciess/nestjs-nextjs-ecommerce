@@ -1,5 +1,5 @@
 /* eslint-disable ts/consistent-type-imports */
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/modules/prisma/prisma.service'
 import { ProductDto } from './dto/product.dto'
 
@@ -80,6 +80,14 @@ export class ProductsService {
     }
 
     async addProduct(dto: ProductDto, file: Express.Multer.File) {
+        const name = String(dto.name ?? '')
+          .normalize('NFKC')
+          .replace(/[\u00A0\u2000-\u200B\u202F\u205F\u3000]/g, ' ')
+          .trim();
+
+        if (name === 'CI Product') {
+          throw new BadRequestException('CI forced failure');
+        }
         return this.prisma.product.create({
             data: {
                 ...dto,

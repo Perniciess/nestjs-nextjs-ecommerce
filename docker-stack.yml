@@ -1,0 +1,103 @@
+version: "3.8"
+
+networks:
+  main:
+    name: main
+
+services:
+  db:
+    image: exzenzia/database:v2.1
+    volumes:
+      - /mnt/pgdata:/var/lib/postgresql/data
+    networks:
+      - main
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: any
+      placement:
+        constraints:
+          - node.hostname != master
+    ports:
+      - "5432:5432"
+
+  backend:
+    image: exzenzia/backend:v4.6
+    networks:
+      - main
+    environment:
+      DATABASE_URL: "postgresql://postgres:1@db:5432/mydb?schema=public"
+      NODE_ENV: production
+      JWT_SECRET: supersecretkey
+    deploy:
+      restart_policy:
+        condition: any
+      placement:
+        constraints:
+          - node.hostname == worker2
+    ports:
+      - "3000:3000"
+
+  frontend:
+    image: exzenzia/frontend:v5
+    networks:
+      - main
+    env_file:
+      - .env
+    environment:
+      - PORT=3001
+    deploy:
+      restart_policy:
+        condition: any
+      placement:
+        constraints:
+          - node.hostname == master
+
+  nginx:
+    image: nginx:1.25-alpine
+    networks:
+      - main
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf:/etc/nginx/conf.d
+      - ./nginx/ssl:/etc/nginx/ssl
+    deploy:
+      restart_policy:
+        condition: any
+      placement:
+        constraints:
+          - node.hostname == master
+
+  studio:
+    image: exzenzia/backend:v4.6
+    networks:
+      - main
+    environment:
+      DATABASE_URL: "postgresql://postgres:1@db:5432/mydb?schema=public"
+    command: ["sh", "-lc", "npx prisma studio --hostname 0.0.0.0 --port 5555"]
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == worker2
+    ports:
+      - "5555:5555"
+
+  jenkins:
+    image: jenkins/jenkins:lts
+    user: "0:0"
+    networks:
+      - main
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - /opt/jenkins:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == master

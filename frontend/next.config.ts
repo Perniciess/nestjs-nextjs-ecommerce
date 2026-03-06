@@ -14,7 +14,7 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '192.168.0.1',
+        hostname: '192.168.56.11',
         pathname: '/uploads/**',
       },
     ],
@@ -22,6 +22,8 @@ const nextConfig = {
   },
 
   async rewrites() {
+     const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL
+     if (!apiBase) return []
     return [
       {
         source: '/api/:path*',
