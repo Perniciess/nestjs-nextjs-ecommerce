@@ -1,106 +1,94 @@
-### Todo list
-- [x] Fix "ENOENT"
-- [x] Started working on redesigning the frontend part:
-  - [x] Return widgets/description and catalog
-  - [x] Fix FSD design features/auth
-  - [x] Fix FSD design in entities
-  - [x] Check FSD errors in widgets
-  - [ ] Add Zustand
+# Docker Swarm Deployment
 
-### Notes for dev
-`NEST_WEB_URL="http://localhost:3000/"`
+Ветка содержит экспериментальное развёртывание fullstack-приложения в Docker Swarm.
 
-"ENOENT" if request on wrong URL
+## Цель
 
-## Docker Swarm deployment (single stack file)
+Изучение возможностей Docker Swarm для оркестрации сервисов, распределения нагрузки между узлами и организации отказоустойчивого окружения для веб-приложения.
 
-Используется один файл: `docker-stack.yml`.
+## Используемые технологии
 
-Распределение контейнеров по нодам задается через labels:
-- `master (192.168.0.1)`: `frontend`, `backend`, `nginx`, `maxscale`
-- `worker1 (192.168.0.2)`: `mariadb1`
-- `worker2 (192.168.0.3)`: `mariadb2`
+* Docker Swarm
+* Nginx
+* NestJS
+* Next.js
+* PostgreSQL
 
-Для отказоустойчивости:
-- `mariadb1 + mariadb2` работают как Galera Cluster
-- `maxscale` дает backend единый endpoint и переключает трафик на живую ноду
+## Тестовый стенд
 
-### 1) Инициализация Swarm
+Для тестирования использовались четыре виртуальные машины.
 
-На `master (192.168.0.1)`:
+| VM  | Назначение                     |
+| --- | --------------------------     |
+| VM1 | Swarm Manager                  |
+| VM2 | Nginx + Frontend (Next.js)     |
+| VM3 | Backend (NestJS) + Postgresql  |
+| VM4 | PostgreSQL                     |
+
+Swarm Manager использовался для управления кластером и развёртывания сервисов.
+
+## Реализовано
+
+* Развёртывание приложения через Docker Stack.
+* Распределение сервисов между несколькими узлами Docker Swarm.
+* Использование labels для управления размещением контейнеров.
+* Организация сетевого взаимодействия между сервисами.
+* Публикация приложения через Nginx.
+* Эксперименты с отказоустойчивостью сервисов.
+* Использование общего NFS-хранилища для хранения данных.
+
+## Архитектура
+
+Client
+↓
+Nginx (VM2)
+↓
+Frontend (VM2)
+↓
+Backend (VM3)
+↓
+PostgreSQL (VM4)
+
+Swarm Manager (VM1)
+└─ управление кластером Docker Swarm
+
+## Что было изучено
+
+* Docker Swarm
+* Docker Stack
+* Service Placement
+* Node Labels
+* Overlay Networks
+* NFS Volumes
+* Failover сценарии
+* Jenkins
+
+## Failover сценарий
+Если  VM4 падает, то на VM3 должен развернуться контейнер PostgreSQL смонтированный к NFS-хранилищу.
+
+## Тестирование
+Отдельный настроенный Jenkins контейнер для проверки работоспособности эндпоинтов.
+
+## Запуск
+
+Инициализация кластера:
 
 ```bash
-docker swarm init --advertise-addr 192.168.0.1
+docker swarm init --advertise-addr <MANAGER_IP>
 ```
 
-Скопируй join-команду и выполни на `worker1` и `worker2`.
-
-### 2) Назначение labels (на master)
-
-Посмотри имена нод:
-
-```bash
-docker node ls
-```
-
-Назначь labels:
-
-```bash
-docker node update --label-add app_role=master <MASTER_NODE_NAME>
-docker node update --label-add db_role=worker1 <WORKER1_NODE_NAME>
-docker node update --label-add db_role=worker2 <WORKER2_NODE_NAME>
-```
-
-### 3) Сборка образов приложения (на master)
-
-```bash
-docker build -t ecommerce-backend:swarm -f backend/backend.Dockerfile backend
-docker build -t ecommerce-frontend:swarm -f frontend/frontend_optimized.Dockerfile frontend
-```
-
-### 4) Деплой стека (на master)
+Развёртывание стека:
 
 ```bash
 docker stack deploy -c docker-stack.yml ecommerce
 ```
 
-Проверка:
+Проверка сервисов:
 
 ```bash
 docker stack services ecommerce
-docker service ps ecommerce_mariadb1
-docker service ps ecommerce_mariadb2
-docker service ps ecommerce_backend
-docker service logs -f ecommerce_maxscale
 ```
 
-### 5) Проверка БД кластера
+## Статус
 
-```bash
-docker exec -it $(docker ps -q -f name=ecommerce_mariadb1) mysql -uroot -prootpass -e "SHOW STATUS LIKE 'wsrep_cluster_size';"
-```
-
-Ожидаемо: `wsrep_cluster_size = 2`.
-
-### 6) Тест failover
-
-Отключи worker1 из планировщика:
-
-```bash
-docker node update --availability drain <WORKER1_NODE_NAME>
-```
-
-Проверь, что backend продолжает отдавать данные через `maxscale` (переключение на `mariadb2`).
-
-Вернуть ноду:
-
-```bash
-docker node update --availability active <WORKER1_NODE_NAME>
-```
-
-### Важно
-- Открой между VM порты `3306, 4567, 4568, 4444` (для Galera/SST).
-- Первый bootstrap кластера делает `mariadb1` автоматически только на пустом volume.
-- Файл деплоя: [docker-stack.yml](/home/pernicies/Projects/e-commerce/docker-stack.yml)
-
-shadcnui
+Учебная ветка для исследования Docker Swarm и различных сценариев развёртывания fullstack-приложений.
