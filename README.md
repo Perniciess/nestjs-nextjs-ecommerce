@@ -23,8 +23,6 @@
 * Docker Swarm
 * Kubernetes
 * Nginx
-* Galera Cluster
-* MaxScale
 * Patroni
 
 ## Branches
@@ -35,7 +33,7 @@
 
 ### docker-swarm
 
-Развёртывание через Docker Swarm с отказоустойчивым кластером БД.
+Развёртывание через Docker Swarm с общим NFS-хранилищем.
 
 ### kubernetes
 
