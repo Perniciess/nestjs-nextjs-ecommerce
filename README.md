@@ -20,7 +20,6 @@
 ### Infrastructure
 
 * Docker Compose
-* Docker Swarm
 * Kubernetes
 * Nginx
 * Patroni
